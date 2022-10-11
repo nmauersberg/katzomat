@@ -1,13 +1,16 @@
-import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import {
+  createNativeStackNavigator,
+  NativeStackScreenProps,
+} from '@react-navigation/native-stack';
 import React from 'react';
 import {Text, Button} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import {GetRandomRgb} from './utils/GetRandomRgb.tsx';
+import {GetRandomRgb} from './utils/GetRandomRgb';
 
 export type StackParamList = {
   Home: undefined;
   Details: {
-    radomColor: string;
+    randomColor: string;
   };
 };
 
@@ -32,8 +35,6 @@ const HomeScreen = ({
     </SafeAreaView>
   );
 };
-
-
 
 const DetailsScreen = ({
   route,

@@ -5,7 +5,7 @@ import Icon from 'react-native-vector-icons/AntDesign';
 
 export type BottomTabParamList = {
   HomeTab: undefined;
-  SetttingsTab: undefined;
+  SettingsTab: undefined;
 };
 
 const Tab = createBottomTabNavigator<BottomTabParamList>();

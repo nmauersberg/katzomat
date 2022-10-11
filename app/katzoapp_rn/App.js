@@ -1,6 +1,6 @@
 import Paho from 'paho-mqtt'; //https://www.eclipse.org/paho/files/jsdoc/index.html
 
-import {useState, useEffect} from 'react';
+import {useState, useContext} from 'react';
 //import { StatusBar } from 'expo-status-bar';
 import {
   StyleSheet,
@@ -13,34 +13,24 @@ import {
   Alert,
   Modal,
   Pressable,
-  TouchableHighlight,
-  Platform,
-  TouchableOpacitiy,
   TextInput,
 } from 'react-native';
-import DateTimePicker from '@react-native-community/datetimepicker';
 import {DateTimePickerAndroid} from '@react-native-community/datetimepicker';
 import React from 'react';
 import {SafeAreaProvider, SafeAreaView} from 'react-native-safe-area-context';
 import {NavigationContainer} from '@react-navigation/native';
-import {NativeStackExample} from './screens/NativeStackExample.tsx';
-import {BottomTabNavigator} from './screens/utils/BottomTabNavigator.tsx';
 import Icon from 'react-native-vector-icons/AntDesign';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
-
-import ImageSlider from './ImageSlider';
+import {PageContext, PageContextProvider} from './context/pageContext';
 
 const Tab = createBottomTabNavigator();
-export const PageContext = React.createContext();
+
 export const SettingsContext = React.createContext();
 
-
-client = new Paho.Client(
+const client = new Paho.Client(
   'adeptuscat.ddns.net',
   Number(9001),
-  `mqtt-async-test-${parseInt(Math.random() * 100)}`,
+  `mqtt-async-test-${parseInt(Math.random() * 100, 10)}`,
 );
 
 const images = [
@@ -51,17 +41,25 @@ const images = [
 
 const WIDTH = Dimensions.get('window').width;
 const HEIGHT = Dimensions.get('window').height;
-var imgKeys = [];
-var dotKeys = [];
+const imgKeys = [];
+const dotKeys = [];
 
-var once = false;
+const once = false;
 
 export default function App() {
-  var statusString = 'Katzomat Status:';
+  return (
+    <PageContextProvider>
+      <Page />
+    </PageContextProvider>
+  );
+}
+
+const Page = () => {
+  const {connected, setConnected, name} = useContext(PageContext);
+
+  const statusString = 'Katzomat Status:';
   const [value, setValue] = useState(0);
   const [status, setStatus] = useState(`${statusString} unkown`);
-  const [connected, setConnected] = useState(false);
-  const [name, setName] = useState('katz');
   const [password, setPassword] = useState('katz!');
   const [domain, setDomain] = useState('adeptuscat.ddns.net');
   const [dir, setDir] = useState(`katzomat/${name}`);
@@ -88,9 +86,9 @@ export default function App() {
       if (message.destinationName === `katzomat/${name}/images/take`) {
         return;
       }
-      var obj = JSON.parse(message.payloadString);
-      var base64Img = `data:image/png;base64,${obj.value}`;
-      var timestamp = parseInt(obj.timestamp, 10);
+      const obj = JSON.parse(message.payloadString);
+      const base64Img = `data:image/png;base64,${obj.value}`;
+      const timestamp = parseInt(obj.timestamp, 10);
       //setImg(base64Img);
       for (let i = 0; i < imgs.length; i++) {
         //console.log(timestamp);
@@ -102,14 +100,14 @@ export default function App() {
         }
       }
       setImg(base64Img);
-      var date = new Date(timestamp * 1000);
-      var year = date.getFullYear();
-      var month = date.getMonth();
-      var day = date.getDay();
-      var hours = date.getHours();
-      var minutes = '0' + date.getMinutes();
-      var seconds = '0' + date.getSeconds();
-      var formattedTime =
+      const date = new Date(timestamp * 1000);
+      const year = date.getFullYear();
+      const month = date.getMonth();
+      const day = date.getDay();
+      const hours = date.getHours();
+      const minutes = '0' + date.getMinutes();
+      const seconds = '0' + date.getSeconds();
+      const formattedTime =
         day +
         '.' +
         month +
@@ -121,7 +119,7 @@ export default function App() {
         minutes.substr(-2) +
         ':' +
         seconds.substr(-2);
-      var arr = imgs;
+      const arr = imgs;
       arr.push({
         timestamp: timestamp,
         uri: base64Img,
@@ -134,9 +132,9 @@ export default function App() {
       setImgs(arr);
 
       //console.log(imgs);
-      //var arr = imgss.append({"uri": "base64Img"});
+      //const arr = imgss.append({"uri": "base64Img"});
       //console.log(arr);
-      //var imgDict = imgs.append({uri: base64Img});
+      //const imgDict = imgs.append({uri: base64Img});
       //setImgs(imgDict);
       //const dict = {
       //  uri: base64Img,
@@ -148,8 +146,8 @@ export default function App() {
     }
     if (message.destinationName === `katzomat/${name}/timetable`) {
       console.log(message.payloadString);
-      var obj = JSON.parse(message.payloadString);
-      var values = obj.values;
+      const obj = JSON.parse(message.payloadString);
+      const values = obj.values;
       parseTimetable(values);
     }
     if (message.destinationName === `katzomat/${name}/settings`) {
@@ -158,14 +156,14 @@ export default function App() {
   }
 
   function parseTimetable(values) {
-    var arr = [];
+    const arr = [];
     for (let i = 0; i < values.length; i++) {
-      var recurring = true;
-      var days_count = 0;
-      var item_text = '';
+      let recurring = true;
+      let days_count = 0;
+      let item_text = '';
       for (let ii = 0; ii < values[i].weekdays.length; ii++) {
         days_count += 1;
-        var day = values[i].weekdays[ii];
+        const day = values[i].weekdays[ii];
         if (day === 0) {
           item_text += 'Everyday, ';
         }
@@ -193,14 +191,14 @@ export default function App() {
       }
       if (days_count === 0) {
         recurring = false;
-        var date = new Date(values[i].timestamp * 1000);
-        var year = date.getFullYear();
-        var month = date.getMonth();
-        var day = date.getDay();
-        var hours = date.getHours();
-        var minutes = '0' + date.getMinutes();
-        var seconds = '0' + date.getSeconds();
-        var formattedTime =
+        const date = new Date(values[i].timestamp * 1000);
+        const year = date.getFullYear();
+        const month = date.getMonth();
+        const day = date.getDay();
+        const hours = date.getHours();
+        const minutes = '0' + date.getMinutes();
+        const seconds = '0' + date.getSeconds();
+        const formattedTime =
           year +
           '-' +
           ('0' + (month + 1)).slice(-2) +
@@ -216,8 +214,8 @@ export default function App() {
         //}
       } else {
         const zeroPad = (num, places) => String(num).padStart(places, '0');
-        var hour = zeroPad(values[i].hour, 2);
-        var minute = zeroPad(values[i].minute, 2);
+        const hour = zeroPad(values[i].hour, 2);
+        const minute = zeroPad(values[i].minute, 2);
         item_text += hour + ':' + minute;
       }
       //console.log(item_text, recurring);
@@ -349,7 +347,7 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      <PageContext.Provider value={[connected, setConnected, name, setName]}>
+      <PageContextProvider>
         <NavigationContainer>
           {/*<NativeStackExample /> */}
           <Tab.Navigator
@@ -417,14 +415,14 @@ export default function App() {
             </Tab.Screen>
           </Tab.Navigator>
         </NavigationContainer>
-      </PageContext.Provider>
+      </PageContextProvider>
     </SafeAreaProvider>
   );
-}
+};
 
-interface ChildProps {
-  parentFunction: Function;
-}
+// interface ChildProps {
+//   parentFunction: Function;
+// }
 
 function HomeTabScreen(route) {
   const [connected, setConnected] = React.useContext(PageContext);
@@ -535,8 +533,8 @@ function TimeTabScreen(route) {
 
   const [date, setDate] = useState(new Date(1598051730000));
   const [time, setTime] = useState(new Date(1598051730000));
-  var showTimePickerAfter = false;
-  var mode = '';
+  let showTimePickerAfter = false;
+  let mode = '';
 
   const onDateChange = (event, selectedDate) => {
     console.log(selectedDate);
@@ -582,7 +580,7 @@ function TimeTabScreen(route) {
   }, [route, route.navigation, connected]); // ← This `connected` here ensures that the header state is updated
 
   function removeTimetableEntry(index) {
-    var arr = route.timetable;
+    let arr = route.timetable;
     arr.splice(index, 1);
     if (arr.length === 0) {
       console.log('new');

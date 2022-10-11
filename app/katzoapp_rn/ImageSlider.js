@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import {useState} from 'react';
 import {StyleSheet, Text, Button, View, Image} from 'react-native';
 import React from 'react';
 
@@ -48,7 +48,7 @@ const dotStyle = {
   fontSize: '20px',
 };
 
-const ImageSlider = ({ slides }) => {
+const ImageSlider = ({slides}) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const goToPrevious = () => {
     const isFirstSlide = currentIndex === 0;
@@ -60,7 +60,7 @@ const ImageSlider = ({ slides }) => {
     const newIndex = isLastSlide ? 0 : currentIndex + 1;
     setCurrentIndex(newIndex);
   };
-  const goToSlide = (slideIndex) => {
+  const goToSlide = slideIndex => {
     setCurrentIndex(slideIndex);
   };
   const slideStylesWidthBackground = {
@@ -70,9 +70,13 @@ const ImageSlider = ({ slides }) => {
 
   return (
     <View>
-        <Button title='dfsd' onPress={() => goToPrevious()} style={leftArrowStyles} />
-        <Button title='dfsd' onPress={() => goToNext()} style={leftArrowStyles} />
-        <slideStylesWidthBackground />
+      <Button
+        title="dfsd"
+        onPress={() => goToPrevious()}
+        style={leftArrowStyles}
+      />
+      <Button title="dfsd" onPress={() => goToNext()} style={leftArrowStyles} />
+      <slideStylesWidthBackground />
     </View>
   );
 };
